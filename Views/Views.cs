@@ -9,4 +9,20 @@ public static class Views
         hx-swap="beforeend">
     </div>
     """;
+
+    public const string SignIn = """
+    <form class="sign_in" hx-post="/account/sign_in" hx-swap-"outerHTML">
+        <p>Username:</p>
+        <input type="text" name="username">
+        <p>Password:</p>
+        <input type="text" name="password">
+        <button type="submit">Sign In</button>
+    </form>
+    """;
+
+    public static string SignedInHeader(string username) => $"""
+        <div class="user_header">
+            <p>Signed in as: {username}</p>
+        </div>
+    """;
 }

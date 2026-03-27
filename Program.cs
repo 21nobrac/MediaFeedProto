@@ -8,7 +8,11 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-Dictionary<string, User> users = new() { {"Greg", new("Greg", "pass")}};
+Dictionary<string, User> users = new() 
+{
+    {"Greg", new("Greg", "pass")},
+    {"Carbon", new("Carbon", "A form of!")},
+};
 
 Dictionary<string, User> activeSessions = [];
 
@@ -17,14 +21,36 @@ Dictionary<string, Queue<Post>> feeds = [];
 
 
 
-app.MapGet("/account/sign_in", (string username, string password) =>
+app.MapPost("/account/sign_in", ([FromForm] string username, [FromForm] string password, HttpContext ctx) =>
 {
     if (users.TryGetValue(username, out var user) && user.Password == password)
     {
         var sessionID = Guid.NewGuid().ToString();
-        
+        activeSessions.Add(sessionID, user);
+
+        ctx.Response.Cookies.Append("session_id", sessionID, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = !builder.Environment.IsDevelopment(),
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddHours(8)
+        });
+
+        return Results.Ok(Views.SignedInHeader(user.Username));
     }
-    
+    return Results.Unauthorized();
+})
+.DisableAntiforgery();
+
+app.MapGet("/account/get_status", (HttpContext ctx) =>
+{
+    var sessionID = ctx.Request.Cookies["session_id"];
+    string html;
+    if (sessionID == null || !activeSessions.TryGetValue(sessionID, out var user))
+        html = Views.SignIn;
+    else
+        html = Views.SignedInHeader(user.Username);
+    return Results.Content(html, "text/html");
 });
 
 app.MapGet("/feed/random/{count}", (int count) =>
@@ -73,12 +99,15 @@ app.MapPost("/feed/{feedID}/next/{count}", (string feedID, int count) =>
     return Results.Content(newPosts, "text/html");
 });
 
-app.MapPost("/create/post", ([FromForm]string title, [FromForm]string username, [FromForm]string body) =>
+app.MapPost("/create/post", ([FromForm]string title, [FromForm]string body, HttpContext ctx) =>
 {
+    var sessionID = ctx.Request.Cookies["session_id"];
+    if (sessionID == null || !activeSessions.TryGetValue(sessionID, out var user))
+        return Results.Unauthorized();
     string postID = Guid.NewGuid().ToString();
-    Post postRecord = new(title, username, body, postID);
+    Post postRecord = new(title, user.Username, body, postID);
     posts.Add(postRecord);
-    string post = ExamplePosts.BuildTextPost(username, title, body, postID);
+    string post = ExamplePosts.BuildTextPost(user.Username, title, body, postID);
     return Results.Content(post, "text/html");
 }).DisableAntiforgery();
 

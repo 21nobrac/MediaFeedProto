@@ -1,57 +1,86 @@
+:root{
+    --text-color: white;
+    --text-alt-color: lightblue;
+    --border-hl-color: rgb(41, 43, 46);
+    --border-color-hl: rgb(46, 49, 54);
+    --border-alt-color: rgb(46, 49, 54);
+    --border-alt-color-hl: rgb(57, 63, 73);
+    --text-bg-color: rgb(30, 31, 32);
+    --page-bg-color: rgb(15, 15, 15);
+    --big-corner-radius: 15px;
+    --small-corner-radius: 10px;
+    --button-color: rgb(41, 43, 46);
+    --button-highlight-color: rgb(91, 100, 116);
+    --default-font-family: Helvetica, Arial, Verdana, sans-serif;
+    --pane-border-thickness: 2px;
+}
+
 body {
-    background-color: burlywood;
+    background-color: var(--page-bg-color);
 }
 
 h1 {
-    color:black;
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    color:var(--text-color);
+    font-family: var(--default-font-family);
     font-size: large;
 }
 
 p {
-    color:black;
-    font-family: 'Courier New', Courier, monospace;
+    color:var(--text-color);
+    font-family: var(--default-font-family);
     font-size: small;
 }
 
 button {
-    background-color:blanchedalmond;
-    border-radius: 10px;
-    font-family: 'Courier New', Courier, monospace;
+    padding: 5px;
+    color:var(--text-color);
+    border: none;
+    background-color: var(--button-color);
+    border-radius: var(--small-corner-radius);
+    font-family: var(--default-font-family);
+}
+
+button:hover,
+button:focus {
+    background-color: var(--button-highlight-color);
 }
 
 .post {
     width: 40%;
-    border-radius:  25px;
+    border-radius: var(--big-corner-radius);
+    border: var(--pane-border-thickness) solid var(--text-bg-color);
+    background-color: var(--text-bg-color);
     margin-bottom: 20px;
+}
+.post:hover,
+.post:focus {
+    border: var(--pane-border-thickness) solid var(--border-hl-color);
 }
 
 .post_titlecard {
-    background-color: blanchedalmond;
-    border-top-left-radius: 25px;
-    border-top-right-radius: 25px;
-    border: 7px solid darkgoldenrod;
-    padding-left: 3%;
+    border-top-left-radius: var(--big-corner-radius);
+    border-top-right-radius: var(--big-corner-radius);
+    border-bottom: 0;
+    padding-bottom: 2%;
+    padding-left: 2%;
     p {
-        color: blue;
+        color: var(--text-alt-color);
         padding-left: 2%;
     }
 }
 
 .post_body {
-    background-color: blanchedalmond;
-    border: 7px solid darkolivegreen;
+    border-top: 0;
     padding: 2%;
 }
 
 .post_interactions {
+    margin: 10px;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: darkolivegreen;
-    border-bottom-left-radius: 25px;
-    border-bottom-right-radius: 25px;
-    border: 7px solid darkolivegreen;
+    justify-content: left;
+    align-items: left;
+    border-bottom-left-radius: var(--big-corner-radius);
+    border-bottom-right-radius: var(--big-corner-radius);
     border-top: 0px;
 }
 
@@ -60,8 +89,8 @@ button {
 }
 
 .comment_body {
-    background-color: blanchedalmond;
-    border: 7px solid darkslategray;
+    background-color: var(--text-bg-color);
+    border: 7px solid var(--border-alt-color);
     padding: 2%;
 }
 
@@ -70,23 +99,44 @@ button {
 }
 
 .comment_nameplate {
-    background-color: blanchedalmond;
-    border-top-left-radius: 25px;
-    border-top-right-radius: 25px;
-    border: 7px solid rgb(33, 48, 48);
+    background-color: var(--text-bg-color);
+    border-top-left-radius: var(--big-corner-radius);
+    border-top-right-radius: var(--big-corner-radius);
+    border: 7px solid var(--border-hl-color);
     p {
-        color: blue;
+        color: var(--text-alt-color);
         padding-left: 2%;
     }
 }
 
 .comment_interactions {
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
-    background-color: darkslategray;
-    border-bottom-left-radius: 25px;
-    border-bottom-right-radius: 25px;
-    border: 7px solid darkslategray;
+    background-color: var(--border-alt-color);
+    border-bottom-left-radius: var(--big-corner-radius);
+    border-bottom-right-radius: var(--big-corner-radius);
+    border: 7px solid var(--border-alt-color);
     border-top: 0px;
+}
+
+.text_box_title, .text_box_body {
+    width: 100%;
+    resize: none;
+    overflow: hidden;
+    min-height: 40px;
+    border: none;
+    background-color: var(--text-bg-color);
+    color: var(--text-color);
+    font-family: var(--default-font-family);
+}
+
+.text_box_body {
+    font-size: small;
+}
+
+.text_box_title {
+    margin-top: 10px;
+    font-size: medium;
+    width: 98%;
 }

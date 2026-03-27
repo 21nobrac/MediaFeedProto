@@ -6,16 +6,25 @@
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
     </head>
     <body>
+        <div name="sign_on_status_checker"
+            hx-get="/account/get_status" hx-swap="outerHTML" hx-trigger="load">
+        </div>
         <form class="post" hx-post="/create/post" hx-swap="afterbegin" hx-target="#feed">
             <div class="post_titlecard">
-                <p>Title:</p>
-                <input type="text" name="title">
-                <p>Username:</p>
-                <input type="text" name="username">
+                <textarea class="text_box_title" name="title" placeholder="Descriptive title here..." rows="1"></textarea>
             </div>
             <div class="post_body">
-                <input type="text" name="body">
+                <textarea class="text_box_body" name="body" placeholder="Start typing..." rows="1"></textarea>
             </div>
+            <script>
+                const textareas = document.querySelectorAll('.text_box_title, .text_box_body');
+                textareas.forEach(textarea => {
+                    textarea.addEventListener('input', function () {
+                        this.style.height = 'auto';
+                        this.style.height = this.scrollHeight + 'px';
+                    });
+                });
+            </script>
             <div class="post_interactions">
                 <button type="submit">Submit Post</button>
             </div>
