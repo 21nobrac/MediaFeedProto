@@ -10,6 +10,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite("Data Source=mediafeed.db"));
 
 builder.Services.AddSingleton<SessionService>();
+builder.Services.AddSingleton<FeedService>();
 
 var app = builder.Build();
 
@@ -38,8 +39,6 @@ using (var scope = app.Services.CreateScope())
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-List<Post> posts = [];
-Dictionary<string, Queue<Post>> feeds = [];
 
 app.MapPost("/account/sign_in", async ([FromForm] string username, [FromForm] string password, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
 {
@@ -87,31 +86,22 @@ app.MapGet("/post/{postID}/comments", (string postID) =>
     return Results.Content(comment, "text/html");
 });
 
-app.MapPost("/feed/build/", async (ApplicationDbContext db) =>
+app.MapPost("/feed/build/", async (ApplicationDbContext db, FeedService feedService) =>
 {
-    string feedID = Guid.NewGuid().ToString();
-    Queue<Post> feed = new();
-    foreach (var post in (await db.Posts.ToListAsync()).Shuffle())
-    {
-        feed.Enqueue(post);
-    }
-    feeds.Add(feedID, feed);
+    string feedID = await feedService.CreateFeed(db);
     var html = Views.FeedPostGetter(feedID);
 
     return Results.Content(html, "text/html");
 });
 
-app.MapPost("/feed/{feedID}/next/{count}", (string feedID, int count) =>
+app.MapPost("/feed/{feedID}/next/{count}", (string feedID, int count, FeedService feedService) =>
 {
-    Queue<Post> feed = feeds[feedID];
+    List<Post> posts = [.. feedService.GetNextPosts(feedID, count)];
     string newPosts = "";
-    for (int i = 0; i < count; i++)
+    foreach (var post in posts)
     {
-        if (feed.TryDequeue(out var next))
-        {
-            newPosts += Views.BuildTextPost(next.Username, next.Title, next.Body, next.ID);
-            newPosts += "\n";
-        }
+        newPosts += Views.BuildTextPost(post.Username, post.Title, post.Body, post.ID);
+        newPosts += "\n";
     }
     return Results.Content(newPosts, "text/html");
 });

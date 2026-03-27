@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediaFeedProto;
@@ -8,7 +9,7 @@ public class SessionService
     /// </summary>
     public IReadOnlyDictionary<string, User> ActiveSessions => activeSessions;
     // The backing dictionary.
-    private readonly Dictionary<string, User> activeSessions = [];
+    private readonly ConcurrentDictionary<string, User> activeSessions = new();
     
     /// <summary>
     /// Creates a new session for the user and returns the unique session ID, which is used for validation.
