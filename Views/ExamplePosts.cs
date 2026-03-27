@@ -40,33 +40,6 @@ public static class ExamplePosts
         "Tomatoes make great weapons when water balloons aren't available.",
     ];
 
-    public static string BuildTextPost(string username, string title, string body, string postID) => $"""
-    <div id="text_post_{postID}" class="post">
-        <div class="post_titlecard">
-            <h1>{title}</h1>
-            <p>{username}</p>
-        </div>
-        <div class="post_body">
-            <p>{body}</p>
-        </div>
-        <div class="post_interactions">
-            <button
-                hx-get="/post/{postID}/comments"
-                hx-swap="innerhtml"
-                hx-target="#comment_space_{postID}">
-                Comments
-            </button>
-            <button>
-                Like
-            </button>
-            <button>
-                Dislike
-            </button>
-        </div>
-        <div class="post_comments" id="comment_space_{postID}"></div>
-    </div>
-    """;
-
     private static string BuildComment(string username, string body) => $"""
     <div id="comment" class="comment">
         <div class="comment_nameplate">
@@ -102,7 +75,7 @@ public static class ExamplePosts
         var title = titles.RandomElement(rng);
         var body = $"{sentences.RandomElement(rng)} {sentences.RandomElement(rng)}"; // grab two random sentences
         
-        var html = BuildTextPost(username, title, body, Guid.NewGuid().ToString());
+        var html = Views.BuildTextPost(username, title, body, Guid.NewGuid().ToString());
 
         return html;
     }

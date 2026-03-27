@@ -41,12 +41,10 @@ Dictionary<string, User> activeSessions = [];
 List<Post> posts = [];
 Dictionary<string, Queue<Post>> feeds = [];
 
-
-
-app.MapPost("/account/sign_in", ([FromForm] string username, [FromForm] string password, HttpContext ctx, ApplicationDbContext db) =>
+app.MapPost("/account/sign_in", async ([FromForm] string username, [FromForm] string password, HttpContext ctx, ApplicationDbContext db) =>
 {
-    var user = db.Users.FirstOrDefault(u => u.Username == username);
-    if (user != null && user.Password == password)
+    var user = await UserValidation.TryGetUser(username, password, db);
+    if (user != null)
     {
         var sessionID = Guid.NewGuid().ToString();
         activeSessions.Add(sessionID, user);
@@ -65,14 +63,11 @@ app.MapPost("/account/sign_in", ([FromForm] string username, [FromForm] string p
 })
 .DisableAntiforgery();
 
-app.MapGet("/account/get_status", (HttpContext ctx) =>
+app.MapGet("/account/get_status", async (HttpContext ctx, ApplicationDbContext db) =>
 {
     var sessionID = ctx.Request.Cookies["session_id"];
-    string html;
-    if (sessionID == null || !activeSessions.TryGetValue(sessionID, out var user))
-        html = Views.SignIn;
-    else
-        html = Views.SignedInHeader(user.Username);
+    var user = sessionID != null ? await UserValidation.ValidateSession(sessionID, activeSessions, db) : null;
+    string html = user != null ? Views.SignedInHeader(user.Username) : Views.SignIn;
     return Results.Content(html, "text/html");
 });
 
@@ -93,11 +88,11 @@ app.MapGet("/post/{postID}/comments", (string postID) =>
     return Results.Content(comment, "text/html");
 });
 
-app.MapPost("/feed/build/", (ApplicationDbContext db) =>
+app.MapPost("/feed/build/", async (ApplicationDbContext db) =>
 {
     string feedID = Guid.NewGuid().ToString();
     Queue<Post> feed = new();
-    foreach (var post in db.Posts.ToList().Shuffle())
+    foreach (var post in (await db.Posts.ToListAsync()).Shuffle())
     {
         feed.Enqueue(post);
     }
@@ -115,24 +110,44 @@ app.MapPost("/feed/{feedID}/next/{count}", (string feedID, int count) =>
     {
         if (feed.TryDequeue(out var next))
         {
-            newPosts += ExamplePosts.BuildTextPost(next.Username, next.Title, next.Body, next.ID);
+            newPosts += Views.BuildTextPost(next.Username, next.Title, next.Body, next.ID);
             newPosts += "\n";
         }
     }
     return Results.Content(newPosts, "text/html");
 });
 
-app.MapPost("/create/post", ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db) =>
+app.MapPost("/create/post", async ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db) =>
 {
     var sessionID = ctx.Request.Cookies["session_id"];
-    if (sessionID == null || !activeSessions.TryGetValue(sessionID, out var user))
+    var user = sessionID != null ? await UserValidation.ValidateSession(sessionID, activeSessions, db) : null;
+    if (user == null)
         return Results.Unauthorized();
     string postID = Guid.NewGuid().ToString();
     Post postRecord = new Post { Title = title, Username = user.Username, Body = body, ID = postID };
-    db.Posts.Add(postRecord);
-    db.SaveChanges();
-    string post = ExamplePosts.BuildTextPost(user.Username, title, body, postID);
+    await db.Posts.AddAsync(postRecord);
+    await db.SaveChangesAsync();
+    string post = Views.BuildTextPost(user.Username, title, body, postID);
     return Results.Content(post, "text/html");
+}).DisableAntiforgery();
+
+app.MapPost("/post/{postID}/delete", async (string postID, HttpContext ctx, ApplicationDbContext db) =>
+{
+    var sessionID = ctx.Request.Cookies["session_id"];
+    var user = sessionID != null ? await UserValidation.ValidateSession(sessionID, activeSessions, db) : null;
+    if (user == null)
+        return Results.Unauthorized();
+    
+    var post = await db.Posts.FirstOrDefaultAsync(p => p.ID == postID);
+    if (post == null)
+        return Results.NotFound();
+    
+    if (post.Username != user.Username)
+        return Results.Forbid();
+
+    db.Posts.Remove(post);
+    await db.SaveChangesAsync();
+    return Results.Ok();
 }).DisableAntiforgery();
 
 app.Run();
