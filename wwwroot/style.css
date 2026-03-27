@@ -30,7 +30,7 @@ button {
     background-color: blanchedalmond;
     border-top-left-radius: 25px;
     border-top-right-radius: 25px;
-    border: 10px solid darkgoldenrod;
+    border: 7px solid darkgoldenrod;
     padding-left: 3%;
     p {
         color: blue;
@@ -40,7 +40,7 @@ button {
 
 .post_body {
     background-color: blanchedalmond;
-    border: 10px solid darkolivegreen;
+    border: 7px solid darkolivegreen;
     padding: 2%;
 }
 
@@ -51,7 +51,7 @@ button {
     background-color: darkolivegreen;
     border-bottom-left-radius: 25px;
     border-bottom-right-radius: 25px;
-    border: 10px solid darkolivegreen;
+    border: 7px solid darkolivegreen;
     border-top: 0px;
 }
 
@@ -61,7 +61,7 @@ button {
 
 .comment_body {
     background-color: blanchedalmond;
-    border: 10px solid darkslategray;
+    border: 7px solid darkslategray;
     padding: 2%;
 }
 
@@ -73,7 +73,7 @@ button {
     background-color: blanchedalmond;
     border-top-left-radius: 25px;
     border-top-right-radius: 25px;
-    border: 10px solid rgb(33, 48, 48);
+    border: 7px solid rgb(33, 48, 48);
     p {
         color: blue;
         padding-left: 2%;
@@ -87,6 +87,6 @@ button {
     background-color: darkslategray;
     border-bottom-left-radius: 25px;
     border-bottom-right-radius: 25px;
-    border: 10px solid darkslategray;
+    border: 7px solid darkslategray;
     border-top: 0px;
 }

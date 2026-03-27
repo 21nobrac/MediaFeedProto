@@ -40,7 +40,7 @@ public static class ExamplePosts
         "Tomatoes make great weapons when water balloons aren't available.",
     ];
 
-    private static string BuildTextPost(string username, string title, string body, string postID) => $"""
+    public static string BuildTextPost(string username, string title, string body, string postID) => $"""
     <div id="text_post" class="post">
         <div class="post_titlecard">
             <h1>{title}</h1>

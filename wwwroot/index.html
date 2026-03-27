@@ -6,15 +6,28 @@
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
     </head>
     <body>
-        <div id="feed">
-            <div id="posts">
-                <div id="initial_load"
-                    hx-get="/feed/random/10"
-                    hx-swap="outerhtml"
-                    hx-trigger="load">
-                    Loading posts...
-                </div>
+        <form class="post" hx-post="/create/post" hx-swap="afterbegin" hx-target="#feed">
+            <div class="post_titlecard">
+                <p>Title:</p>
+                <input type="text" name="title">
+                <p>Username:</p>
+                <input type="text" name="username">
             </div>
+            <div class="post_body">
+                <input type="text" name="body">
+            </div>
+            <div class="post_interactions">
+                <button type="submit">Submit Post</button>
+            </div>
+        </form>
+        <div id="feed">
+            <div id="feed_builder"
+                hx-post="/feed/build/"
+                hx-swap="outerhtml"
+                hx-trigger="load">
+                Building your feed...
+            </div>
+            <div id="posts"></div>
             <!-- Sentinel so that it automatically loads new posts at the end. Batch size is set to 5 for now -->
             <div id="sentinel">Loading posts...</div>
 
@@ -24,10 +37,8 @@
 
                 const observer = new IntersectionObserver((entries) => {
                     if (entries[0].isIntersecting) {
-                        htmx.ajax('GET', '/feed/random/5', {
-                            target: posts,
-                            swap: 'beforeend'
-                        });
+                        console.log("Sentinel triggered");
+                        htmx.trigger('#feed_filler', 'load_more_posts');
                     }
                 });
 
