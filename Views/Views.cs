@@ -3,7 +3,7 @@ public static class Views
 {
     public static string FeedPostGetter(string feedID) => $"""
     <div id="feed_filler"
-        hx-post="/feed/{feedID}/next/3"
+        hx-post="/feed/{feedID}/next/10"
         hx-target="#posts"
         hx-trigger="load, load_more_posts"
         hx-swap="beforeend">
@@ -11,7 +11,7 @@ public static class Views
     """;
 
     public const string SignIn = """
-    <form class="sign_in" hx-post="/account/sign_in" hx-swap-"outerHTML">
+    <form class="sign_in" hx-post="/account/sign_in" hx-swap="outerHTML">
         <p>Username:</p>
         <input type="text" name="username">
         <p>Password:</p>

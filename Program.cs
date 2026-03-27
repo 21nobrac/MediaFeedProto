@@ -1,29 +1,52 @@
 using System.Collections;
 using MediaFeedProto;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite("Data Source=mediafeed.db"));
+
 var app = builder.Build();
+
+// Initialize database
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+    
+    // Seed initial data if Users table is empty
+    if (!db.Users.Any())
+    {
+        db.Users.Add(new User { Username = "Greg", Password = "pass" });
+        db.Users.Add(new User { Username = "Carbon", Password = "A form of!" });
+        db.SaveChanges();
+    }
+    
+    // Seed initial post if Posts table is empty
+    if (!db.Posts.Any())
+    {
+        db.Posts.Add(new Post { Title = "Hey", Username = "Greg", Body = "My First Post!", ID = "atotallyuniqueID_I_SWEAR" });
+        db.SaveChanges();
+    }
+}
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-Dictionary<string, User> users = new() 
-{
-    {"Greg", new("Greg", "pass")},
-    {"Carbon", new("Carbon", "A form of!")},
-};
-
 Dictionary<string, User> activeSessions = [];
 
-List<Post> posts = [new("Hey", "Greg", "My First Post!", "atotallyuniqueID_I_SWEAR")];
+List<Post> posts = [];
 Dictionary<string, Queue<Post>> feeds = [];
 
 
 
-app.MapPost("/account/sign_in", ([FromForm] string username, [FromForm] string password, HttpContext ctx) =>
+app.MapPost("/account/sign_in", ([FromForm] string username, [FromForm] string password, HttpContext ctx, ApplicationDbContext db) =>
 {
-    if (users.TryGetValue(username, out var user) && user.Password == password)
+    var user = db.Users.FirstOrDefault(u => u.Username == username);
+    if (user != null && user.Password == password)
     {
         var sessionID = Guid.NewGuid().ToString();
         activeSessions.Add(sessionID, user);
@@ -70,11 +93,11 @@ app.MapGet("/post/{postID}/comments", (string postID) =>
     return Results.Content(comment, "text/html");
 });
 
-app.MapPost("/feed/build/", () =>
+app.MapPost("/feed/build/", (ApplicationDbContext db) =>
 {
     string feedID = Guid.NewGuid().ToString();
     Queue<Post> feed = new();
-    foreach (var post in posts.Shuffle())
+    foreach (var post in db.Posts.ToList().Shuffle())
     {
         feed.Enqueue(post);
     }
@@ -99,14 +122,15 @@ app.MapPost("/feed/{feedID}/next/{count}", (string feedID, int count) =>
     return Results.Content(newPosts, "text/html");
 });
 
-app.MapPost("/create/post", ([FromForm]string title, [FromForm]string body, HttpContext ctx) =>
+app.MapPost("/create/post", ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db) =>
 {
     var sessionID = ctx.Request.Cookies["session_id"];
     if (sessionID == null || !activeSessions.TryGetValue(sessionID, out var user))
         return Results.Unauthorized();
     string postID = Guid.NewGuid().ToString();
-    Post postRecord = new(title, user.Username, body, postID);
-    posts.Add(postRecord);
+    Post postRecord = new Post { Title = title, Username = user.Username, Body = body, ID = postID };
+    db.Posts.Add(postRecord);
+    db.SaveChanges();
     string post = ExamplePosts.BuildTextPost(user.Username, title, body, postID);
     return Results.Content(post, "text/html");
 }).DisableAntiforgery();

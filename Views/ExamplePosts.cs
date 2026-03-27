@@ -41,7 +41,7 @@ public static class ExamplePosts
     ];
 
     public static string BuildTextPost(string username, string title, string body, string postID) => $"""
-    <div id="text_post" class="post">
+    <div id="text_post_{postID}" class="post">
         <div class="post_titlecard">
             <h1>{title}</h1>
             <p>{username}</p>
@@ -102,7 +102,7 @@ public static class ExamplePosts
         var title = titles.RandomElement(rng);
         var body = $"{sentences.RandomElement(rng)} {sentences.RandomElement(rng)}"; // grab two random sentences
         
-        var html = BuildTextPost(username, title, body, rng.Next().ToString()); // just give it a random postID for now, worry about that later
+        var html = BuildTextPost(username, title, body, Guid.NewGuid().ToString());
 
         return html;
     }

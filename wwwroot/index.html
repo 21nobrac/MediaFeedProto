@@ -37,7 +37,8 @@
                 Building your feed...
             </div>
             <div id="posts"></div>
-            <!-- Sentinel so that it automatically loads new posts at the end. Batch size is set to 5 for now -->
+            <!-- Sentinel so that it automatically loads new posts at the end. Using this JS instead of pure HTMX -->
+            <!-- 'revealed' trigger so that it can repeat infinitely -->
             <div id="sentinel">Loading posts...</div>
 
             <script>
@@ -46,7 +47,6 @@
 
                 const observer = new IntersectionObserver((entries) => {
                     if (entries[0].isIntersecting) {
-                        console.log("Sentinel triggered");
                         htmx.trigger('#feed_filler', 'load_more_posts');
                     }
                 });
