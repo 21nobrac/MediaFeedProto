@@ -9,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite("Data Source=mediafeed.db"));
 
+builder.Services.AddSingleton<SessionService>();
+
 var app = builder.Build();
 
 // Initialize database
@@ -36,18 +38,15 @@ using (var scope = app.Services.CreateScope())
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-Dictionary<string, User> activeSessions = [];
-
 List<Post> posts = [];
 Dictionary<string, Queue<Post>> feeds = [];
 
-app.MapPost("/account/sign_in", async ([FromForm] string username, [FromForm] string password, HttpContext ctx, ApplicationDbContext db) =>
+app.MapPost("/account/sign_in", async ([FromForm] string username, [FromForm] string password, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
 {
     var user = await UserValidation.TryGetUser(username, password, db);
     if (user != null)
     {
-        var sessionID = Guid.NewGuid().ToString();
-        activeSessions.Add(sessionID, user);
+        var sessionID = sessionService.CreateSession(user);
 
         ctx.Response.Cookies.Append("session_id", sessionID, new CookieOptions
         {
@@ -63,10 +62,10 @@ app.MapPost("/account/sign_in", async ([FromForm] string username, [FromForm] st
 })
 .DisableAntiforgery();
 
-app.MapGet("/account/get_status", async (HttpContext ctx, ApplicationDbContext db) =>
+app.MapGet("/account/get_status", async (HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
 {
     var sessionID = ctx.Request.Cookies["session_id"];
-    var user = sessionID != null ? await UserValidation.ValidateSession(sessionID, activeSessions, db) : null;
+    var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
     string html = user != null ? Views.SignedInHeader(user.Username) : Views.SignIn;
     return Results.Content(html, "text/html");
 });
@@ -117,10 +116,10 @@ app.MapPost("/feed/{feedID}/next/{count}", (string feedID, int count) =>
     return Results.Content(newPosts, "text/html");
 });
 
-app.MapPost("/create/post", async ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db) =>
+app.MapPost("/create/post", async ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
 {
     var sessionID = ctx.Request.Cookies["session_id"];
-    var user = sessionID != null ? await UserValidation.ValidateSession(sessionID, activeSessions, db) : null;
+    var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
     if (user == null)
         return Results.Unauthorized();
     string postID = Guid.NewGuid().ToString();
@@ -131,10 +130,10 @@ app.MapPost("/create/post", async ([FromForm]string title, [FromForm]string body
     return Results.Content(post, "text/html");
 }).DisableAntiforgery();
 
-app.MapPost("/post/{postID}/delete", async (string postID, HttpContext ctx, ApplicationDbContext db) =>
+app.MapPost("/post/{postID}/delete", async (string postID, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
 {
     var sessionID = ctx.Request.Cookies["session_id"];
-    var user = sessionID != null ? await UserValidation.ValidateSession(sessionID, activeSessions, db) : null;
+    var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
     if (user == null)
         return Results.Unauthorized();
     
