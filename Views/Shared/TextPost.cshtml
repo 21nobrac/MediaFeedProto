@@ -1,0 +1,22 @@
+@model MediaFeedProto.Models.TextPostViewModel
+
+<div id="text_post_@Model.PostId" class="post">
+    <div class="post_titlecard">
+        <h1>@Model.Title</h1>
+        <p>@Model.Username</p>
+    </div>
+    <div class="post_body">
+        <p>@Model.Body</p>
+    </div>
+    <div class="post_interactions">
+        <button
+            hx-get="/post/@Model.PostId/comments"
+            hx-swap="innerhtml"
+            hx-target="#comment_space_@Model.PostId">
+            Comments
+        </button>
+        <button>Like</button>
+        <button>Dislike</button>
+    </div>
+    <div class="post_comments" id="comment_space_@Model.PostId"></div>
+</div>

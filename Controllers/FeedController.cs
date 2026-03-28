@@ -8,20 +8,21 @@ public class FeedController(FeedService feedService, ApplicationDbContext db) : 
     public async Task<IActionResult> BuildFeed()
     {
         string feedID = await feedService.CreateFeed(db);
-        var html = Views.FeedPostGetter(feedID);
-        return Content(html, "text/html");
+        return PartialView("FeedPostGetter", feedID);
     }
 
     [HttpPost("/feed/{feedID}/next/{count}")]
     public IActionResult GetNextPosts(string feedID, int count)
     {
-        List<Post> posts = [.. feedService.GetNextPosts(feedID, count)];
-        string newPosts = "";
-        foreach (var post in posts)
-        {
-            newPosts += Views.BuildTextPost(post.Username, post.Title, post.Body, post.ID);
-            newPosts += "\n";
-        }
-        return Content(newPosts, "text/html");
+        var posts = feedService.GetNextPosts(feedID, count)
+            .Select(p => new Models.TextPostViewModel
+            {
+                Username = p.Username,
+                Title    = p.Title,
+                Body     = p.Body,
+                PostId   = p.ID
+            });
+
+        return PartialView("NextPosts", posts);
     }
 }

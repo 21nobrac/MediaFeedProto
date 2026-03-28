@@ -11,8 +11,7 @@ public class AccountController(SessionService sessions, ApplicationDbContext db)
         var sessionId = Request.Cookies["session_id"];
         var user = sessionId != null ? await sessions.ValidateSession(sessionId, db) : null;
 
-        string html = user != null ? Views.SignedInHeader(user.Username) : Views.SignIn;
-        return Content(html, "text/html");
+        return user == null ? PartialView("SignIn") : PartialView("SignedInHeader", user.Username);
     }
 
     [HttpPost("/account/sign_in")]
@@ -31,6 +30,6 @@ public class AccountController(SessionService sessions, ApplicationDbContext db)
             Expires = DateTimeOffset.UtcNow.AddHours(8)
         });
 
-        return Content(Views.SignedInHeader(user.Username), "text/html");
+        return PartialView("SignedInHeader", user.Username);
     }
 }

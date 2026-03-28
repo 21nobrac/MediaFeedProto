@@ -3,13 +3,13 @@ using MediaFeedProto.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediaFeedProto.Controllers;
-public class PostController(ApplicationDbContext db) : Controller
+public class PostController(ApplicationDbContext db, SessionService sessionService) : Controller
 {
     [HttpPost("/post/create/")]
     [IgnoreAntiforgeryToken]
-    public async Task<IActionResult> CreatePost([FromForm]string title, [FromForm]string body, HttpContext ctx, SessionService sessionService)
+    public async Task<IActionResult> CreatePost([FromForm]string title, [FromForm]string body)
     {
-        var sessionID = ctx.Request.Cookies["session_id"];
+        var sessionID = HttpContext.Request.Cookies["session_id"];
         var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
         if (user == null)
             return Unauthorized();
@@ -17,14 +17,20 @@ public class PostController(ApplicationDbContext db) : Controller
         Post postRecord = new Post { Title = title, Username = user.Username, Body = body, ID = postID };
         await db.Posts.AddAsync(postRecord);
         await db.SaveChangesAsync();
-        string post = Views.BuildTextPost(user.Username, title, body, postID);
-        return Content(post, "text/html");
+        var postViewModel = new Models.TextPostViewModel
+        {
+            Username = user.Username,
+            Title = title,
+            Body = body,
+            PostId = postID
+        };
+        return PartialView("TextPost", postViewModel);
     }
 
     [HttpPost("/post/{postID}/delete")]
-    public async Task<IActionResult> DeletePost(string postID, HttpContext ctx, SessionService sessionService)
+    public async Task<IActionResult> DeletePost(string postID)
     {
-        var sessionID = ctx.Request.Cookies["session_id"];
+        var sessionID = HttpContext.Request.Cookies["session_id"];
         var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
         if (user == null)
             return Unauthorized();

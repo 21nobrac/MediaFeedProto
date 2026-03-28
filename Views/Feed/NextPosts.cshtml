@@ -1,0 +1,6 @@
+@model IEnumerable<MediaFeedProto.Models.TextPostViewModel>
+
+@foreach (var post in Model)
+{
+    @await Html.PartialAsync("TextPost", post)
+}

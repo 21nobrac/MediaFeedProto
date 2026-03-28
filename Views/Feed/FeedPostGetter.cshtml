@@ -1,0 +1,8 @@
+@model string
+
+<div id="feed_filler"
+    hx-post="/feed/@Model/next/10"
+    hx-target="#posts"
+    hx-trigger="load, load_more_posts"
+    hx-swap="beforeend">
+</div>

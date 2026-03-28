@@ -48,37 +48,4 @@ app.MapGet("/post/{postID}/comments", (string postID) =>
     return Results.Content(comment, "text/html");
 });
 
-app.MapPost("/post/create/", async ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
-{
-    var sessionID = ctx.Request.Cookies["session_id"];
-    var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
-    if (user == null)
-        return Results.Unauthorized();
-    string postID = Guid.NewGuid().ToString();
-    Post postRecord = new Post { Title = title, Username = user.Username, Body = body, ID = postID };
-    await db.Posts.AddAsync(postRecord);
-    await db.SaveChangesAsync();
-    string post = Views.BuildTextPost(user.Username, title, body, postID);
-    return Results.Content(post, "text/html");
-}).DisableAntiforgery();
-
-app.MapPost("/post/{postID}/delete", async (string postID, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
-{
-    var sessionID = ctx.Request.Cookies["session_id"];
-    var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
-    if (user == null)
-        return Results.Unauthorized();
-    
-    var post = await db.Posts.FirstOrDefaultAsync(p => p.ID == postID);
-    if (post == null)
-        return Results.NotFound();
-    
-    if (post.Username != user.Username)
-        return Results.Forbid();
-
-    db.Posts.Remove(post);
-    await db.SaveChangesAsync();
-    return Results.Ok();
-}).DisableAntiforgery();
-
 app.Run();

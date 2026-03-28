@@ -17,16 +17,6 @@ public static class ExamplePosts
         "fretlodestone",
     ];
 
-    private static readonly List<string> titles = [
-        "Blockbuster? No thanks.",
-        "Feeling Proud",
-        "Kinda Hungry",
-        "YO YO WASSUP",
-        "Ethereal Vibes.",
-        "See y'all next year",
-        "I can't believe it"
-    ];
-
     private static readonly List<string> sentences = [
         "So long and thanks for the fish.",
         "Their argument could be heard across the parking lot.",
@@ -65,17 +55,6 @@ public static class ExamplePosts
         var body = sentences.RandomElement(rng);
 
         var html = BuildComment(username, body);
-
-        return html;
-    }
-
-    public static string RandomTextPost()
-    {
-        var username = usernames.RandomElement(rng);
-        var title = titles.RandomElement(rng);
-        var body = $"{sentences.RandomElement(rng)} {sentences.RandomElement(rng)}"; // grab two random sentences
-        
-        var html = Views.BuildTextPost(username, title, body, Guid.NewGuid().ToString());
 
         return html;
     }
