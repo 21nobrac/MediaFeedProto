@@ -4,11 +4,19 @@ using MediaFeedProto.Filters;
 namespace MediaFeedProto.Controllers;
 public class FeedController(FeedService feedService, ApplicationDbContext db) : Controller
 {
-    [HttpPost("/feed/build/")]
-    public async Task<IActionResult> BuildFeed()
+    [HttpPost("/feed/build/{batchSize}")]
+    public async Task<IActionResult> BuildFeed(int batchSize)
     {
         string feedID = await feedService.CreateFeed(db);
-        return PartialView("FeedPostGetter", feedID);
+        var posts = feedService.GetNextPosts(feedID, batchSize)
+            .Select(p => new Models.TextPostViewModel
+            {
+                Username = p.Username,
+                Title    = p.Title,
+                Body     = p.Body,
+                PostId   = p.ID
+            });
+        return PartialView("BatchingFeed", (feedID, batchSize, posts));
     }
 
     [HttpPost("/feed/{feedID}/next/{count}")]

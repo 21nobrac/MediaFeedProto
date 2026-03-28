@@ -31,28 +31,11 @@
         </form>
         <div id="feed">
             <div id="feed_builder"
-                hx-post="/feed/build/"
+                hx-post="/feed/build/10"
                 hx-swap="outerhtml"
                 hx-trigger="load">
                 Building your feed...
             </div>
-            <div id="posts"></div>
-            <!-- Sentinel so that it automatically loads new posts at the end. Using this JS instead of pure HTMX -->
-            <!-- 'revealed' trigger so that it can repeat infinitely -->
-            <div id="sentinel">Loading posts...</div>
-
-            <script>
-                const sentinel = document.getElementById('sentinel');
-                const posts = document.getElementById('posts');
-
-                const observer = new IntersectionObserver((entries) => {
-                    if (entries[0].isIntersecting) {
-                        htmx.trigger('#feed_filler', 'load_more_posts');
-                    }
-                });
-
-                observer.observe(sentinel);
-            </script>
         </div>
     </body>
 </html>

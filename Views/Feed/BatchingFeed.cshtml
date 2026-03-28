@@ -1,0 +1,10 @@
+@model (string feedID, int batchSize, IEnumerable<MediaFeedProto.Models.TextPostViewModel> initialPosts)
+
+@await Html.PartialAsync("NextPosts", Model.initialPosts)   
+
+<div id="feed_refiller_@Model.feedID"
+    hx-post="/feed/@Model.feedID/next/@Model.batchSize"
+    hx-target="closest div"
+    hx-trigger="revealed"
+    hx-swap="beforeend">
+</div>
