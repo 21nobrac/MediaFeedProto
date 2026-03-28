@@ -9,7 +9,7 @@
         <div name="sign_on_status_checker"
             hx-get="/account/get_status" hx-swap="outerHTML" hx-trigger="load">
         </div>
-        <form class="post" hx-post="/create/post" hx-swap="afterbegin" hx-target="#feed">
+        <form class="post" hx-post="/post/create/" hx-swap="afterbegin" hx-target="#feed">
             <div class="post_titlecard">
                 <textarea class="text_box_title" name="title" placeholder="Descriptive title here..." rows="1"></textarea>
             </div>

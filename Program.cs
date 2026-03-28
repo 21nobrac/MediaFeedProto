@@ -48,7 +48,7 @@ app.MapGet("/post/{postID}/comments", (string postID) =>
     return Results.Content(comment, "text/html");
 });
 
-app.MapPost("/create/post", async ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
+app.MapPost("/post/create/", async ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
 {
     var sessionID = ctx.Request.Cookies["session_id"];
     var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
