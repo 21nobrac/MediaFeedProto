@@ -12,6 +12,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddSingleton<SessionService>();
 builder.Services.AddSingleton<FeedService>();
 
+builder.Services.AddControllersWithViews();
+
 var app = builder.Build();
 
 // Initialize database
@@ -38,36 +40,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
-
-
-app.MapPost("/account/sign_in", async ([FromForm] string username, [FromForm] string password, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
-{
-    var user = await UserValidation.TryGetUser(username, password, db);
-    if (user != null)
-    {
-        var sessionID = sessionService.CreateSession(user);
-
-        ctx.Response.Cookies.Append("session_id", sessionID, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = !builder.Environment.IsDevelopment(),
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddHours(8)
-        });
-
-        return Results.Ok(Views.SignedInHeader(user.Username));
-    }
-    return Results.Unauthorized();
-})
-.DisableAntiforgery();
-
-app.MapGet("/account/get_status", async (HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
-{
-    var sessionID = ctx.Request.Cookies["session_id"];
-    var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
-    string html = user != null ? Views.SignedInHeader(user.Username) : Views.SignIn;
-    return Results.Content(html, "text/html");
-});
+app.MapControllers();
 
 app.MapGet("/feed/random/{count}", (int count) =>
 {
