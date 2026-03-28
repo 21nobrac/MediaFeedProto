@@ -42,41 +42,10 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapControllers();
 
-app.MapGet("/feed/random/{count}", (int count) =>
-{
-    string newPosts = "";
-    for (int i = 0; i < count; i++)
-    {
-        newPosts += ExamplePosts.RandomTextPost();
-        newPosts += "\n";
-    }
-    return Results.Content(newPosts, "text/html");
-});
-
 app.MapGet("/post/{postID}/comments", (string postID) =>
 {
     string comment = ExamplePosts.RandomComment();
     return Results.Content(comment, "text/html");
-});
-
-app.MapPost("/feed/build/", async (ApplicationDbContext db, FeedService feedService) =>
-{
-    string feedID = await feedService.CreateFeed(db);
-    var html = Views.FeedPostGetter(feedID);
-
-    return Results.Content(html, "text/html");
-});
-
-app.MapPost("/feed/{feedID}/next/{count}", (string feedID, int count, FeedService feedService) =>
-{
-    List<Post> posts = [.. feedService.GetNextPosts(feedID, count)];
-    string newPosts = "";
-    foreach (var post in posts)
-    {
-        newPosts += Views.BuildTextPost(post.Username, post.Title, post.Body, post.ID);
-        newPosts += "\n";
-    }
-    return Results.Content(newPosts, "text/html");
 });
 
 app.MapPost("/create/post", async ([FromForm]string title, [FromForm]string body, HttpContext ctx, ApplicationDbContext db, SessionService sessionService) =>
