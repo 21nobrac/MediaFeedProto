@@ -6,6 +6,7 @@ public class ApplicationDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Post> Posts { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -22,5 +23,9 @@ public class ApplicationDbContext : DbContext
         // Configure Post
         modelBuilder.Entity<Post>()
             .HasKey(p => p.ID);
+
+        // Configure Comment
+        modelBuilder.Entity<Comment>()
+            .HasKey(c => c.ID);
     }
 }

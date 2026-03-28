@@ -46,4 +46,31 @@ public class PostController(ApplicationDbContext db, SessionService sessionServi
         await db.SaveChangesAsync();
         return Ok();
     }
+
+    [HttpGet("/post/{postID}/comments")]
+    public async Task<IActionResult> GetComments(string postID)
+    {
+        var comments = await db.Comments.Where(c => c.PostID == postID).ToListAsync() ?? new List<Comment>();
+        List<Models.CommentViewModel> commentViewModels = comments.Select(c => c.ToViewModel()).ToList() ?? [];
+        return PartialView("CommentFeed", ((IEnumerable<Models.CommentViewModel>)commentViewModels, postID));
+    }
+
+    [HttpPost("/post/{postID}/comment/create")]
+    public async Task<IActionResult> CreateComment(string postID, [FromForm]string commentBody)
+    {
+        var sessionID = HttpContext.Request.Cookies["session_id"];
+        var user = sessionID != null ? await sessionService.ValidateSession(sessionID, db) : null;
+        if (user == null)
+            return Unauthorized();
+
+        Comment commentRecord = new Comment { PostID = postID, Username = user.Username, Body = commentBody, ID = Guid.NewGuid().ToString() };
+        await db.Comments.AddAsync(commentRecord);
+        await db.SaveChangesAsync();
+        var commentViewModel = new Models.CommentViewModel
+        {
+            Username = user.Username,
+            Body = commentBody
+        };
+        return PartialView("Comment", commentViewModel);
+    }
 }

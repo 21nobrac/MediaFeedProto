@@ -1,0 +1,10 @@
+@model string
+
+<form class="comment" hx-post="/post/@Model/comment/create" hx-swap="afterend">
+    <div class="comment_input_body">
+        <textarea class="text_box_body" name="commentBody" placeholder="Start typing..." rows="1"></textarea>
+    </div>
+    <div class="comment_interactions">
+        <button type="submit">Submit Comment</button>
+    </div>
+</form>

@@ -88,10 +88,15 @@ button:focus {
     margin-left: 5%;
 }
 
-.comment_body {
+.comment_body, .comment_input_body{
     background-color: var(--text-bg-color);
     border: 7px solid var(--border-alt-color);
     padding: 2%;
+}
+
+.comment_input_body {
+    border-top-left-radius: var(--big-corner-radius);
+    border-top-right-radius: var(--big-corner-radius);
 }
 
 .post_comments:empty {

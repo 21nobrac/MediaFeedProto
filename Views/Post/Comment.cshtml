@@ -1,0 +1,17 @@
+@model MediaFeedProto.Models.CommentViewModel
+<div id="comment" class="comment">
+    <div class="comment_nameplate">
+        <p>@Model.Username</p>
+    </div>
+    <div class="comment_body">
+        <p>@Model.Body</p>
+    </div>
+    <div class="comment_interactions">
+        <button>
+            Like
+        </button>
+        <button>
+            Dislike
+        </button>
+    </div>
+</div>

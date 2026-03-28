@@ -42,10 +42,4 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapControllers();
 
-app.MapGet("/post/{postID}/comments", (string postID) =>
-{
-    string comment = ExamplePosts.RandomComment();
-    return Results.Content(comment, "text/html");
-});
-
 app.Run();

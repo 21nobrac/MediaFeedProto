@@ -1,0 +1,10 @@
+@model (IEnumerable<MediaFeedProto.Models.CommentViewModel> comments, string postID)
+
+<div class="post_comments">
+    @await Html.PartialAsync("CommentInputForm", Model.postID)
+
+    @foreach (var comment in Model.comments)
+    {
+        @await Html.PartialAsync("Comment", comment)
+    }
+</div>
